@@ -1,0 +1,100 @@
+#!/usr/bin/env node
+
+var json,
+	opter = require('opter'),
+	_ = require('underscore'),
+	appVersion = require('../package.json').version,
+	opts = {
+		operation: {
+			argument: 'string',
+			description: 'the operation to perform on the property (set, delete, increment, decrement, not, push, pop, shift, unshift)',
+			defaultValue: 'set'
+		},
+		property: {
+			argument: 'string',
+			description: 'the property (using dot notation for sub properties) to operate on',
+			required: true
+		},
+		type: {
+			argument: 'type',
+			description: 'the data type of the value',
+			defaultValue: 'string'
+		},
+		value: {
+			argument: 'value',
+			description: 'the data to apply with the given operation',
+			required: true
+		}
+	},
+	options = opter(opts, appVersion),
+	traverseToObject = function(propChain, obj) {
+		var props = propChain.split('.'),
+			lastProp = props.pop(),
+			tmpObj = obj;
+		for (var i = 0; i < props.length; i++) {
+			if (tmpObj.hasOwnProperty(props[i]) && _.isObject(tmpObj[props[i]]) && !_.isArray(tmpObj[props[i]])) {
+				tmpObj = tmpObj[props[i]];
+			}
+			else {
+				process.exit(1);
+			}
+		}
+		return tmpObj;
+	},
+	convert = function(type, value) {
+		var newVal;
+		switch(type.toLowerCase()) {
+			case 'number':
+				newVal = parseInt(value, 10);
+				break;
+
+			case 'boolean':
+				newVal = (value === 'true');
+				break;
+
+			case 'object':
+			case 'array':
+				try {
+					newVal = JSON.parse(value);
+				}
+				catch(ex) {
+					process.exit(1);
+				}
+				break;
+
+			case 'null':
+				newVal = null;
+				break
+
+			default:
+				newVal = value;
+
+		}
+		return newVal;
+	};
+
+process.stdin.resume();
+process.stdin.setEncoding('utf8');
+
+process.stdin.on('data', function(chunk) {
+	try {
+		json = JSON.parse(chunk);
+	}
+	catch(ex) {
+		process.exit(1);
+	}
+	var convertedValue = convert(options.type, options.value),
+		objToOperateOn = traverseToObject(options.property, json),
+		lastProp = options.property.split('.').pop();
+	switch(options.operation) {
+		case 'set':
+			objToOperateOn[lastProp] = convertedValue;
+			break;
+	}
+});
+
+process.stdin.on('end', function() {
+	process.stdout.write(JSON.stringify(json));
+})
+
+process.stdout.on('error', process.exit);
