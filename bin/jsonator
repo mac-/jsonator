@@ -4,28 +4,7 @@ var json,
 	opter = require('opter'),
 	_ = require('underscore'),
 	appVersion = require('../package.json').version,
-	opts = {
-		operation: {
-			argument: 'string',
-			description: 'the operation to perform on the property (set, delete, increment, decrement, not, push, pop, shift, unshift)',
-			defaultValue: 'set'
-		},
-		property: {
-			argument: 'string',
-			description: 'the property (using dot notation for sub properties) to operate on',
-			required: true
-		},
-		type: {
-			argument: 'type',
-			description: 'the data type of the value',
-			defaultValue: 'string'
-		},
-		value: {
-			argument: 'value',
-			description: 'the data to apply with the given operation',
-			required: true
-		}
-	},
+	opts = require('../options'),
 	options = opter(opts, appVersion),
 	traverseToObject = function(propChain, obj) {
 		var props = propChain.split('.'),
@@ -89,6 +68,38 @@ process.stdin.on('data', function(chunk) {
 	switch(options.operation) {
 		case 'set':
 			objToOperateOn[lastProp] = convertedValue;
+			break;
+
+		case 'delete':
+			delete objToOperateOn[lastProp];
+			break;
+
+		case 'increment':
+			objToOperateOn[lastProp]++;
+			break;
+
+		case 'decrement':
+			objToOperateOn[lastProp]--;
+			break;
+
+		case 'not':
+			objToOperateOn[lastProp] = !objToOperateOn[lastProp];
+			break;
+
+		case 'push':
+			objToOperateOn[lastProp].push(convertedValue);
+			break;
+
+		case 'pop':
+			objToOperateOn[lastProp].pop();
+			break;
+
+		case 'shift':
+			objToOperateOn[lastProp].shift();
+			break;
+
+		case 'unshift':
+			objToOperateOn[lastProp].unshift(convertedValue);
 			break;
 	}
 });
