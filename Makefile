@@ -8,7 +8,7 @@ update:
 	make clean && rm -rf npm-shrinkwrap.json && npm install && npm shrinkwrap
 
 test:
-	./node_modules/.bin/jshint lib/* --config test/jshint/config.json
+	./node_modules/.bin/jshint bin/* --config test/jshint/config.json
 	@NODE_ENV=test ./node_modules/.bin/mocha --recursive --reporter spec --timeout 3000 test
 
 test-cov:
