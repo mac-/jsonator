@@ -1,71 +1,12 @@
 #!/usr/bin/env node
-
-var json,
+var json, result,
 	opter = require('opter'),
 	_ = require('underscore'),
 	appVersion = require('../package.json').version,
 	opts = require('../options'),
 	options = opter(opts, appVersion),
-	arrayNotationRegExp = /\[.+\]/,
-	traverseToObject = function(propChain, obj) {
-		var props = propChain.split('.'),
-			lastProp = props.pop(),
-			tmpObj = obj;
-		if (lastProp.match(arrayNotationRegExp)) {
-			props.push(lastProp.split('[')[0]);
-		}
-		for (var i = 0; i < props.length; i++) {
-			if (tmpObj.hasOwnProperty(props[i]) && _.isObject(tmpObj[props[i]]) && !_.isArray(tmpObj[props[i]])) {
-				tmpObj = tmpObj[props[i]];
-			}
-			else if (props[i].match(arrayNotationRegExp)) {
-				var propName = (props[i].indexOf('[') === 0) ? null : props[i].split('[')[0],
-					idx = parseInt(props[i].split('[')[1].split(']')[0], 10);
-				if (!_.isArray(tmpObj) && !_.isArray(tmpObj[propName])) {
-					process.exit(1);
-				}
-				tmpObj = (propName) ? tmpObj[propName][idx] : tmpObj[idx];
-			}
-			else if (i === props.length - 1 && _.isArray(tmpObj[props[i]])) {
-				tmpObj = tmpObj[props[i]];
-			}
-			else {
-				process.exit(1);
-			}
-		}
-		return tmpObj;
-	},
-	convert = function(type, value) {
-		var newVal;
-		switch(type.toLowerCase()) {
-			case 'number':
-				newVal = parseInt(value, 10);
-				break;
-
-			case 'boolean':
-				newVal = (value === 'true');
-				break;
-
-			case 'object':
-			case 'array':
-				try {
-					newVal = JSON.parse(value);
-				}
-				catch(ex) {
-					process.exit(1);
-				}
-				break;
-
-			case 'null':
-				newVal = null;
-				break
-
-			default:
-				newVal = value;
-
-		}
-		return newVal;
-	};
+	operationStrategyFactory = require('../lib/operationStrategyFactory.js'),
+	stringConverter = require('../lib/stringConverter.js');
 
 process.stdin.resume();
 process.stdin.setEncoding('utf8');
@@ -77,69 +18,18 @@ process.stdin.on('data', function(chunk) {
 	catch(ex) {
 		process.exit(1);
 	}
-	var convertedValue = convert(options.type, options.value),
-		objToOperateOn = traverseToObject(options.property, json),
-		lastProp = options.property.split('.').pop();
+	options.type = options.type || 'string';
+	var convertedValue = stringConverter(options.type, options.value),
+		strategy = operationStrategyFactory.getStrategy(options.operation);
 
-	if (lastProp.match(arrayNotationRegExp)) {
-		lastProp = parseInt(lastProp.replace(/.*\[/, '').replace(']', ''), 10);
-	}
-	switch(options.operation) {
-		case 'get':
-			json = objToOperateOn[lastProp];
-			break;
-
-		case 'exists':
-			json = objToOperateOn.hasOwnProperty(lastProp);
-			break;
-
-		case 'set':
-			objToOperateOn[lastProp] = convertedValue;
-			break;
-
-		case 'delete':
-			delete objToOperateOn[lastProp];
-			break;
-
-		case 'increment':
-			objToOperateOn[lastProp]++;
-			break;
-
-		case 'decrement':
-			objToOperateOn[lastProp]--;
-			break;
-
-		case 'not':
-			objToOperateOn[lastProp] = !objToOperateOn[lastProp];
-			break;
-
-		case 'contains':
-			json = !!(_.find(objToOperateOn[lastProp], function(item){ return _.isEqual(item, convertedValue); }));
-			break;
-
-		case 'push':
-			objToOperateOn[lastProp].push(convertedValue);
-			break;
-
-		case 'pop':
-			objToOperateOn[lastProp].pop();
-			break;
-
-		case 'shift':
-			objToOperateOn[lastProp].shift();
-			break;
-
-		case 'unshift':
-			objToOperateOn[lastProp].unshift(convertedValue);
-			break;
-	}
+	result = strategy.execute(json, options.property, convertedValue);
 });
 
 process.stdin.on('end', function() {
-	if (json === undefined) {
+	if (result === undefined) {
 		process.exit(1);
 	}
-	process.stdout.write(JSON.stringify(json));
+	process.stdout.write(JSON.stringify(result));
 })
 
 process.stdout.on('error', process.exit);
