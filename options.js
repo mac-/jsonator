@@ -1,7 +1,7 @@
 module.exports = {
 	operation: {
 		argument: 'string',
-		description: 'the operation to perform on the property (set, delete, increment, decrement, not, push, pop, shift, unshift)',
+		description: 'the operation to perform on the property (get, set, exists, delete, increment, decrement, not, contains, push, pop, shift, unshift)',
 		defaultValue: 'set'
 	},
 	property: {
