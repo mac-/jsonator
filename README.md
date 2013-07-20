@@ -63,6 +63,7 @@ $ echo "{\"id\":\"fnord\"}" | jsonator -o set -p id -v 1234
 ```
 $ echo "{\"id\":\"fnord\"}" | jsonator -o set -p id -v 1234 -t number
 {"type":1234}
+```
 
 ```
 $ echo "{\"id\":{\"type\":\"string\"}}" | jsonator -o set -p id.type -v number -t string
