@@ -6,6 +6,8 @@ jsonator is app to help with manipulating json text streams.
 [![NPM version](https://badge.fury.io/js/jsonator.png)](http://badge.fury.io/js/jsonator)
 [![Dependency Status](https://david-dm.org/mac-/jsonator.png)](https://david-dm.org/mac-/jsonator)
 
+[![NPM](https://nodei.co/npm/jsonator.png?downloads=true&stars=true)](https://nodei.co/npm/jsonator/)
+
 ## Installation
 
 	npm install -g jsonator
