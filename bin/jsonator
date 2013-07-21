@@ -22,7 +22,12 @@ process.stdin.on('data', function(chunk) {
 	var convertedValue = stringConverter(options.type, options.value),
 		strategy = operationStrategyFactory.getStrategy(options.operation);
 
-	result = strategy.execute(json, options.property, convertedValue);
+	try {
+		result = strategy.execute(json, options.property, convertedValue);
+	}
+	catch(ex) {
+		process.exit(1);
+	}
 });
 
 process.stdin.on('end', function() {

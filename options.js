@@ -6,8 +6,7 @@ module.exports = {
 	},
 	property: {
 		argument: 'string',
-		description: 'the property (using dot notation for sub properties) to operate on',
-		required: true
+		description: 'the property (using dot notation for sub properties) to operate on'
 	},
 	type: {
 		argument: 'type',
