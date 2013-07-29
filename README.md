@@ -229,7 +229,7 @@ $ echo "{\"ids\":[1,2,{\"types\":[\"number\"]}]}" | jsonator -o pop -p ids[2].ty
 {"ids":[1,2,{"types":[]}]}
 ```
 
-### `shfit` operation
+### `shift` operation
 
 ```
 $ echo "{\"ids\":[1,2,3]}" | jsonator -o shift -p ids
